@@ -1,17 +1,34 @@
 import { ApolloServer, gql } from "apollo-server";
+import { randomUUID } from "node:crypto";
 
+/**
+ * Under fetching
+ * HTTP route that returns less data
+ * 
+ * Over fetching
+ * HTTP route returns more data than we need
+ */
 
 const typeDefs = gql`
+type User { 
+    id: String!,
+    name: String!
+}
+
 type Query {
-    users: [String!]!
+    users: [User!]!
 }
 
 type Mutation { 
-    createUser(name: String!): String!
+    createUser(name: String!): User!
 }
 `
+interface User { 
+    id: string,
+    name: string
+}
 
-const users: string[] = [];
+const users: User[] = [];
 
 const server = new ApolloServer({
     typeDefs,
@@ -23,9 +40,15 @@ const server = new ApolloServer({
         },
         
         Mutation: {
-            createUser: (parent, args, ctx) => {
-                users.push(args.name)
-                return args.name
+            createUser: (_, args, ctx) => {
+                const user = {
+                    id: randomUUID(),
+                    name: args.name
+                }
+
+                users.push(user)
+
+                return user
             }
         }
     }
